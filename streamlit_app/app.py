@@ -39,6 +39,7 @@ st.markdown("""
         border-radius: 5px;
         padding: 1rem;
         margin: 1rem 0;
+        color: #000000;
     }
     .signal-buy {
         color: #28a745;
