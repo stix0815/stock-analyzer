@@ -1,0 +1,93 @@
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║           📊 STOCK ANALYSIS APP - QUICK START                  ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+🚀 FASTEST WAY TO RUN:
+
+   cd stock_analyzer/streamlit_app
+   ./run.sh
+
+   ✓ Installs dependencies automatically
+   ✓ Runs tests to verify everything works
+   ✓ Opens app in your browser
+   ✓ Ready in under 2 minutes!
+
+────────────────────────────────────────────────────────────────
+
+📋 MANUAL STEPS (if run.sh doesn't work):
+
+   1. Install dependencies:
+      pip3 install -r requirements.txt
+
+   2. Run the app:
+      streamlit run app.py
+
+   3. Open browser:
+      http://localhost:8501
+
+────────────────────────────────────────────────────────────────
+
+🧪 RUN TESTS FIRST (optional but recommended):
+
+   python3 test_app.py
+
+   This tests:
+   ✓ All modules import correctly
+   ✓ Data fetching works (tests with AAPL)
+   ✓ Technical indicators calculate properly
+   ✓ Scoring system functions
+   ✓ Monte Carlo simulation runs
+
+────────────────────────────────────────────────────────────────
+
+🎯 FIRST TIME USING THE APP:
+
+   1. App opens → Accept disclaimer
+   2. Enter ticker: AAPL (or TSLA, NVDA)
+   3. Select timeframe: Short-term (1-7 days)
+   4. Select risk: Moderate
+   5. Click "Analyze Stock"
+   6. View results in ~3 seconds!
+
+────────────────────────────────────────────────────────────────
+
+☁️  DEPLOY TO STREAMLIT CLOUD (FREE):
+
+   1. Push code to GitHub
+   2. Go to: share.streamlit.io
+   3. Click "New app"
+   4. Select this file: stock_analyzer/streamlit_app/app.py
+   5. Click "Deploy"
+   6. Get public URL in ~3 minutes!
+
+   Full guide: See DEPLOYMENT.md
+
+────────────────────────────────────────────────────────────────
+
+📚 DOCUMENTATION:
+
+   README.md          → How to use the app
+   DEPLOYMENT.md      → How to deploy (Streamlit Cloud, Docker)
+   PROJECT_SUMMARY.md → Complete project overview
+   QUICK_START.txt    → This file
+
+────────────────────────────────────────────────────────────────
+
+⚠️  REMEMBER:
+
+   ✓ This is EDUCATIONAL ONLY
+   ✓ NOT financial advice
+   ✓ Always do your own research
+   ✓ Consult licensed financial advisors
+
+────────────────────────────────────────────────────────────────
+
+🎉 ENJOY ANALYZING STOCKS!
+
+   Test with: AAPL, TSLA, NVDA, MSFT, GOOGL, AMZN, META
+
+────────────────────────────────────────────────────────────────
+
+Need help? Check README.md or run: streamlit run app.py --help
