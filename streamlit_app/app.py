@@ -285,7 +285,138 @@ def create_monte_carlo_chart(simulation_results: dict):
     return fig
 
 
-def display_summary(stock_info: dict, score_results: dict, scenarios: dict, timeframe: str):
+def generate_signal_reasoning(score_results: dict, indicators: dict, stock_info: dict) -> str:
+    """Generate detailed reasoning for the trading signal."""
+    signal = score_results['signal']
+    score = score_results['score']
+    breakdown = score_results['breakdown']
+    
+    reasoning = f"### 🧠 Signal Reasoning\n\n"
+    reasoning += f"**Overall Score: {score}/100** ({score_results['confidence']} confidence)\n\n"
+    
+    # Explain score calculation
+    reasoning += "**Score Breakdown:**\n"
+    for indicator_name, details in breakdown.items():
+        weighted = details['weighted']
+        max_score = details['max']
+        percentage = (weighted / max_score * 100) if max_score > 0 else 0
+        reasoning += f"- **{indicator_name.upper()}:** {weighted:.0f}/{max_score} ({percentage:.0f}%)\n"
+    
+    reasoning += "\n**Why this signal?**\n\n"
+    
+    if "BUY" in signal:
+        reasoning += "✅ **Multiple bullish indicators aligned:**\n"
+        bullish_indicators = []
+        
+        if 'rsi' in indicators and indicators['rsi']['signal'] == 'BULLISH':
+            reasoning += f"- RSI at {indicators['rsi']['value']:.1f} (oversold/neutral territory)\n"
+        if 'macd' in indicators and indicators['macd']['signal'] == 'BULLISH':
+            reasoning += f"- MACD crossover (bullish momentum building)\n"
+        if 'sma' in indicators and 'BULLISH' in indicators['sma']['signal']:
+            reasoning += f"- Price above key moving averages (uptrend)\n"
+        if 'bollinger' in indicators and 'NEAR_LOWER' in indicators['bollinger']['signal']:
+            reasoning += f"- Near lower Bollinger Band (potential bounce)\n"
+        
+        reasoning += f"\n📊 The weighted score of {score}/100 exceeds the BUY threshold, "
+        reasoning += "indicating favorable risk/reward at current levels.\n"
+        
+    elif "SELL" in signal:
+        reasoning += "⚠️ **Warning signs detected:**\n"
+        
+        if 'rsi' in indicators and indicators['rsi']['signal'] == 'BEARISH':
+            reasoning += f"- RSI at {indicators['rsi']['value']:.1f} (overbought)\n"
+        if 'macd' in indicators and indicators['macd']['signal'] == 'BEARISH':
+            reasoning += f"- MACD crossover (bearish momentum)\n"
+        if 'sma' in indicators and 'BEARISH' in indicators['sma']['signal']:
+            reasoning += f"- Price below key moving averages (downtrend)\n"
+        
+        reasoning += f"\n📉 The score of {score}/100 is below the safe threshold, "
+        reasoning += "suggesting poor risk/reward and potential downside.\n"
+        
+    else:  # HOLD
+        reasoning += "⏸️ **Mixed signals - no clear direction:**\n"
+        reasoning += f"- Score of {score}/100 indicates uncertainty\n"
+        reasoning += "- Some indicators bullish, others bearish\n"
+        reasoning += "- Waiting for clearer setup recommended\n"
+    
+    return reasoning
+
+
+def generate_bull_reasoning(scenarios: dict, indicators: dict) -> str:
+    """Generate reasoning for bull case."""
+    bull = scenarios['bull']
+    
+    reasoning = f"### 🟢 Why Bullish?\n\n"
+    reasoning += f"**Upside Target:** ${bull['target']:.2f} ({bull['change_pct']:+.1f}%)\n"
+    reasoning += f"**Probability:** {bull['probability']:.1f}% (based on Monte Carlo)\n\n"
+    
+    reasoning += "**Bullish Catalysts:**\n\n"
+    
+    # Check indicators for bullish signals
+    bullish_count = 0
+    
+    if 'rsi' in indicators and indicators['rsi']['value'] < 50:
+        reasoning += f"- **RSI Recovery:** Currently at {indicators['rsi']['value']:.1f}, room to run higher\n"
+        bullish_count += 1
+    
+    if 'macd' in indicators and indicators['macd']['signal'] == 'BULLISH':
+        reasoning += f"- **Momentum Building:** MACD crossed bullish (histogram: {indicators['macd']['histogram']:.2f})\n"
+        bullish_count += 1
+    
+    if 'sma' in indicators and 'BULLISH' in indicators['sma']['signal']:
+        reasoning += f"- **Trend Support:** Price above moving averages\n"
+        bullish_count += 1
+    
+    if 'volume' in indicators and indicators['volume']['signal'] == 'BULLISH':
+        reasoning += f"- **Strong Buying:** Volume {indicators['volume']['change_pct']:+.1f}% above average\n"
+        bullish_count += 1
+    
+    reasoning += f"\n**{bullish_count} out of 5 indicators supporting upside.**\n"
+    reasoning += f"\n{bull['description']}\n"
+    
+    return reasoning
+
+
+def generate_bear_reasoning(scenarios: dict, indicators: dict) -> str:
+    """Generate reasoning for bear case."""
+    bear = scenarios['bear']
+    
+    reasoning = f"### 🔴 Why Bearish?\n\n"
+    reasoning += f"**Downside Risk:** ${bear['target']:.2f} ({bear['change_pct']:.1f}%)\n"
+    reasoning += f"**Probability:** {bear['probability']:.1f}% (based on Monte Carlo)\n\n"
+    
+    reasoning += "**Bearish Risks:**\n\n"
+    
+    # Check indicators for bearish signals
+    bearish_count = 0
+    
+    if 'rsi' in indicators and indicators['rsi']['value'] > 70:
+        reasoning += f"- **Overbought:** RSI at {indicators['rsi']['value']:.1f}, due for pullback\n"
+        bearish_count += 1
+    
+    if 'macd' in indicators and indicators['macd']['signal'] == 'BEARISH':
+        reasoning += f"- **Momentum Fading:** MACD turned bearish\n"
+        bearish_count += 1
+    
+    if 'sma' in indicators and 'BEARISH' in indicators['sma']['signal']:
+        reasoning += f"- **Trend Broken:** Price below key moving averages\n"
+        bearish_count += 1
+    
+    if 'bollinger' in indicators and 'NEAR_UPPER' in indicators['bollinger']['signal']:
+        reasoning += f"- **Extended:** Near upper Bollinger Band\n"
+        bearish_count += 1
+    
+    if 'volume' in indicators and indicators['volume']['signal'] == 'BEARISH':
+        reasoning += f"- **Weak Volume:** Declining participation\n"
+        bearish_count += 1
+    
+    reasoning += f"\n**{bearish_count} out of 5 risk factors present.**\n"
+    reasoning += f"\n{bear['description']}\n"
+    
+    return reasoning
+
+
+def display_summary(stock_info: dict, score_results: dict, scenarios: dict, timeframe: str, indicators: dict):
     """Display summary view."""
     st.markdown("---")
     st.markdown('<div class="main-header">📊 ANALYSIS SUMMARY</div>', unsafe_allow_html=True)
@@ -321,6 +452,11 @@ def display_summary(stock_info: dict, score_results: dict, scenarios: dict, time
     st.markdown(f"**Timeframe:** {timeframe}")
     st.markdown(f"**Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}")
     
+    # NEW: "Why?" button for signal
+    with st.expander("❓ **Why this signal?** (Click to see reasoning)", expanded=False):
+        signal_reasoning = generate_signal_reasoning(score_results, indicators, stock_info)
+        st.markdown(signal_reasoning)
+    
     # Bull and Bear scenarios
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -330,12 +466,22 @@ def display_summary(stock_info: dict, score_results: dict, scenarios: dict, time
         bull = scenarios['bull']
         st.markdown(f"**Probability:** {bull['probability']:.1f}%")
         st.markdown(bull['description'])
+        
+        # NEW: "Why?" button for bull case
+        with st.expander("❓ **Why bullish?**", expanded=False):
+            bull_reasoning = generate_bull_reasoning(scenarios, indicators)
+            st.markdown(bull_reasoning)
     
     with col2:
         st.markdown("### 🔴 BEAR CASE")
         bear = scenarios['bear']
         st.markdown(f"**Probability:** {bear['probability']:.1f}%")
         st.markdown(bear['description'])
+        
+        # NEW: "Why?" button for bear case
+        with st.expander("❓ **Why bearish?**", expanded=False):
+            bear_reasoning = generate_bear_reasoning(scenarios, indicators)
+            st.markdown(bear_reasoning)
 
 
 def display_detailed_analysis(indicators: dict, score_results: dict, stock_info: dict):
@@ -526,7 +672,7 @@ def main():
             scenarios = mc_sim.get_scenarios(simulation_results)
             
             # Display results
-            display_summary(stock_info, score_results, scenarios, timeframe_display)
+            display_summary(stock_info, score_results, scenarios, timeframe_display, indicators)
             
             # Recommendation
             st.markdown("---")
