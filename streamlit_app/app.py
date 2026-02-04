@@ -639,10 +639,10 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
     with st.expander("📊 Technical Indicators Breakdown", expanded=True):
         # RSI
         if 'rsi' in indicators:
-            col_title, col_info = st.columns([11, 1])
-            with col_title:
+            cols = st.columns([0.4, 0.05, 10])
+            with cols[0]:
                 st.markdown("### RSI (Relative Strength Index)")
-            with col_info:
+            with cols[1]:
                 with st.popover("ℹ️", use_container_width=False):
                     st.markdown("""
                     **What is RSI?**
@@ -680,10 +680,10 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # MACD
         if 'macd' in indicators:
-            col_title, col_info = st.columns([11, 1])
-            with col_title:
+            cols = st.columns([0.65, 0.05, 10])
+            with cols[0]:
                 st.markdown("### MACD (Moving Average Convergence Divergence)")
-            with col_info:
+            with cols[1]:
                 with st.popover("ℹ️", use_container_width=False):
                     st.markdown("""
                     **What is MACD?**
@@ -732,10 +732,10 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # Bollinger Bands
         if 'bollinger' in indicators:
-            col_title, col_info = st.columns([11, 1])
-            with col_title:
+            cols = st.columns([0.25, 0.05, 10])
+            with cols[0]:
                 st.markdown("### Bollinger Bands")
-            with col_info:
+            with cols[1]:
                 with st.popover("ℹ️", use_container_width=False):
                     st.markdown("""
                     **What are Bollinger Bands?**
@@ -781,10 +781,10 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # SMA
         if 'sma' in indicators:
-            col_title, col_info = st.columns([11, 1])
-            with col_title:
+            cols = st.columns([0.45, 0.05, 10])
+            with cols[0]:
                 st.markdown("### Simple Moving Averages (SMA)")
-            with col_info:
+            with cols[1]:
                 with st.popover("ℹ️", use_container_width=False):
                     st.markdown("""
                     **What are SMAs?**
@@ -831,10 +831,10 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # Volume
         if 'volume' in indicators:
-            col_title, col_info = st.columns([11, 1])
-            with col_title:
+            cols = st.columns([0.28, 0.05, 10])
+            with cols[0]:
                 st.markdown("### Volume Analysis")
-            with col_info:
+            with cols[1]:
                 with st.popover("ℹ️", use_container_width=False):
                     st.markdown("""
                     **What is Volume?**
