@@ -628,7 +628,27 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
     with st.expander("📊 Technical Indicators Breakdown", expanded=True):
         # RSI
         if 'rsi' in indicators:
-            st.markdown("### RSI (Relative Strength Index)")
+            col_title, col_info = st.columns([5, 1])
+            with col_title:
+                st.markdown("### RSI (Relative Strength Index)")
+            with col_info:
+                with st.popover("ℹ️"):
+                    st.markdown("""
+                    **What is RSI?**
+                    
+                    The Relative Strength Index (RSI) measures the speed and magnitude of recent price changes to evaluate overbought or oversold conditions.
+                    
+                    **Range:** 0-100
+                    - **< 30:** Oversold (may bounce up)
+                    - **30-70:** Neutral zone
+                    - **> 70:** Overbought (may pull back)
+                    
+                    **How to use:**
+                    - RSI < 30 often signals buying opportunity
+                    - RSI > 70 suggests caution (potential reversal)
+                    - Divergences (price vs RSI) can predict reversals
+                    """)
+            
             rsi = indicators['rsi']
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -649,7 +669,33 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # MACD
         if 'macd' in indicators:
-            st.markdown("### MACD (Moving Average Convergence Divergence)")
+            col_title, col_info = st.columns([5, 1])
+            with col_title:
+                st.markdown("### MACD (Moving Average Convergence Divergence)")
+            with col_info:
+                with st.popover("ℹ️"):
+                    st.markdown("""
+                    **What is MACD?**
+                    
+                    MACD shows the relationship between two moving averages to identify momentum changes and trend direction.
+                    
+                    **Components:**
+                    - **MACD Line:** 12-day EMA minus 26-day EMA
+                    - **Signal Line:** 9-day EMA of MACD Line
+                    - **Histogram:** MACD Line minus Signal Line
+                    
+                    **Signals:**
+                    - **Golden Cross:** MACD crosses above Signal → Bullish
+                    - **Death Cross:** MACD crosses below Signal → Bearish
+                    - **Histogram widening:** Strengthening momentum
+                    - **Histogram narrowing:** Weakening momentum
+                    
+                    **How to use:**
+                    - Look for crossovers as entry/exit signals
+                    - Histogram shows momentum strength
+                    - Best combined with other indicators
+                    """)
+            
             macd = indicators['macd']
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -675,7 +721,33 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # Bollinger Bands
         if 'bollinger' in indicators:
-            st.markdown("### Bollinger Bands")
+            col_title, col_info = st.columns([5, 1])
+            with col_title:
+                st.markdown("### Bollinger Bands")
+            with col_info:
+                with st.popover("ℹ️"):
+                    st.markdown("""
+                    **What are Bollinger Bands?**
+                    
+                    Bollinger Bands measure volatility and identify overbought/oversold conditions using standard deviations around a moving average.
+                    
+                    **Components:**
+                    - **Middle Band:** 20-day Simple Moving Average (SMA)
+                    - **Upper Band:** Middle + (2 × standard deviation)
+                    - **Lower Band:** Middle - (2 × standard deviation)
+                    
+                    **Signals:**
+                    - **Price at Upper Band:** Overbought (potential reversal down)
+                    - **Price at Lower Band:** Oversold (potential bounce up)
+                    - **Price above Middle:** Bullish trend
+                    - **Price below Middle:** Bearish trend
+                    - **Band Squeeze:** Low volatility, breakout coming
+                    - **Band Expansion:** High volatility, trend in motion
+                    
+                    **Mean Reversion:**
+                    When price touches a band, it often reverts back to the middle band (~70% of the time statistically).
+                    """)
+            
             bb = indicators['bollinger']
             col1, col2, col3, col4 = st.columns(4)
             with col1:
@@ -698,7 +770,34 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # SMA
         if 'sma' in indicators:
-            st.markdown("### Simple Moving Averages")
+            col_title, col_info = st.columns([5, 1])
+            with col_title:
+                st.markdown("### Simple Moving Averages (SMA)")
+            with col_info:
+                with st.popover("ℹ️"):
+                    st.markdown("""
+                    **What are SMAs?**
+                    
+                    Simple Moving Averages smooth out price data to identify trend direction and support/resistance levels.
+                    
+                    **Common Periods:**
+                    - **SMA 50:** Short-term trend (50 trading days ≈ 2.5 months)
+                    - **SMA 200:** Long-term trend (200 trading days ≈ 10 months)
+                    
+                    **Signals:**
+                    - **Price above SMA 50:** Short-term uptrend
+                    - **Price below SMA 50:** Short-term downtrend
+                    - **Price above SMA 200:** Long-term bull market
+                    - **Price below SMA 200:** Long-term bear market
+                    
+                    **Golden Cross vs Death Cross:**
+                    - **Golden Cross:** SMA 50 crosses above SMA 200 → Very bullish
+                    - **Death Cross:** SMA 50 crosses below SMA 200 → Very bearish
+                    
+                    **Support/Resistance:**
+                    SMAs often act as dynamic support (in uptrends) or resistance (in downtrends). Price bounces off them frequently.
+                    """)
+            
             sma = indicators['sma']
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -721,7 +820,34 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # Volume
         if 'volume' in indicators:
-            st.markdown("### Volume Analysis")
+            col_title, col_info = st.columns([5, 1])
+            with col_title:
+                st.markdown("### Volume Analysis")
+            with col_info:
+                with st.popover("ℹ️"):
+                    st.markdown("""
+                    **What is Volume?**
+                    
+                    Volume represents the total number of shares traded in a given period. It confirms the strength of price movements.
+                    
+                    **Key Concepts:**
+                    - **High Volume:** Strong conviction, validates price moves
+                    - **Low Volume:** Weak participation, moves may reverse
+                    - **Volume Spike:** Unusual activity, often precedes major moves
+                    
+                    **Volume Patterns:**
+                    - **Price up + Volume up:** Strong bullish confirmation
+                    - **Price up + Volume down:** Weak rally, may fail
+                    - **Price down + Volume up:** Strong selling pressure
+                    - **Price down + Volume down:** Weak decline, may bounce
+                    
+                    **Why it matters:**
+                    Volume confirms whether price movements are supported by real buying/selling or just noise. Without volume, price moves lack conviction.
+                    
+                    **Average Volume:**
+                    Compared to 20-day average to identify unusual activity.
+                    """)
+            
             vol = indicators['volume']
             col1, col2, col3 = st.columns(3)
             with col1:
