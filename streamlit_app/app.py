@@ -639,7 +639,7 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
     with st.expander("📊 Technical Indicators Breakdown", expanded=True):
         # RSI
         if 'rsi' in indicators:
-            cols = st.columns([3.5, 0.3, 10])
+            cols = st.columns([3.5, 0.2, 10])
             with cols[0]:
                 st.markdown("### RSI (Relative Strength Index)")
             with cols[1]:
@@ -680,7 +680,7 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # MACD
         if 'macd' in indicators:
-            cols = st.columns([5.8, 0.3, 10])
+            cols = st.columns([5.8, 0.2, 10])
             with cols[0]:
                 st.markdown("### MACD (Moving Average Convergence Divergence)")
             with cols[1]:
@@ -732,7 +732,7 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # Bollinger Bands
         if 'bollinger' in indicators:
-            cols = st.columns([2.2, 0.3, 10])
+            cols = st.columns([2.2, 0.2, 10])
             with cols[0]:
                 st.markdown("### Bollinger Bands")
             with cols[1]:
@@ -781,7 +781,7 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # SMA
         if 'sma' in indicators:
-            cols = st.columns([3.8, 0.3, 10])
+            cols = st.columns([3.8, 0.2, 10])
             with cols[0]:
                 st.markdown("### Simple Moving Averages (SMA)")
             with cols[1]:
@@ -831,7 +831,7 @@ def display_detailed_analysis(indicators: dict, score_results: dict, stock_info:
         
         # Volume
         if 'volume' in indicators:
-            cols = st.columns([2.4, 0.3, 10])
+            cols = st.columns([2.4, 0.2, 10])
             with cols[0]:
                 st.markdown("### Volume Analysis")
             with cols[1]:
