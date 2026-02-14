@@ -992,7 +992,7 @@ def main():
                 price_chart = create_price_chart(data, indicators, stock_info['name'])
                 st.plotly_chart(price_chart, use_container_width=True)
             
-            with tab4:
+            with tab2:
                 st.markdown("### 🎲 Monte Carlo Simulation Results")
                 
                 col1, col2, col3, col4 = st.columns(4)
@@ -1131,7 +1131,7 @@ def main():
                         Sentiment analysis provides context but should be combined with technical analysis for trading decisions.
                         """)
             
-            with tab2:
+            with tab4:
                 st.markdown("### 📈 Fundamental Analysis")
                 st.markdown("**Long-term investment evaluation based on company fundamentals**")
                 
