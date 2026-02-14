@@ -14,6 +14,7 @@ from indicators import TechnicalIndicators
 from scoring import ScoringSystem
 from monte_carlo import MonteCarloSimulator
 from news_sentiment import NewsSentimentAnalyzer
+from fundamentals import FundamentalAnalyzer
 
 
 # Page configuration
@@ -985,7 +986,7 @@ def main():
             st.markdown("---")
             st.markdown("## 📊 INTERACTIVE CHARTS")
             
-            tab1, tab2, tab3 = st.tabs(["Price & Indicators", "Monte Carlo Simulation", "📰 News & Sentiment"])
+            tab1, tab2, tab3, tab4 = st.tabs(["Price & Indicators", "Monte Carlo Simulation", "📰 News & Sentiment", "📈 Fundamentals"])
             
             with tab1:
                 price_chart = create_price_chart(data, indicators, stock_info['name'])
@@ -1129,6 +1130,470 @@ def main():
                         
                         Sentiment analysis provides context but should be combined with technical analysis for trading decisions.
                         """)
+            
+            with tab4:
+                st.markdown("### 📈 Fundamental Analysis")
+                st.markdown("**Long-term investment evaluation based on company fundamentals**")
+                
+                with st.spinner("Fetching fundamental data..."):
+                    # Fetch fundamental data
+                    fund_analyzer = FundamentalAnalyzer(ticker)
+                    fundamentals = fund_analyzer.fetch_fundamentals()
+                    health_score, analysis = fund_analyzer.calculate_health_score(fundamentals)
+                    
+                    # Overall Health Score
+                    st.markdown("---")
+                    st.markdown("#### 🎯 Investment Health Score")
+                    
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        # Color-coded score
+                        if health_score >= 80:
+                            score_color = "🟢"
+                            score_label = "Excellent"
+                        elif health_score >= 60:
+                            score_color = "🟡"
+                            score_label = "Good"
+                        elif health_score >= 40:
+                            score_color = "🟠"
+                            score_label = "Fair"
+                        else:
+                            score_color = "🔴"
+                            score_label = "Poor"
+                        
+                        st.metric("Overall Score", f"{score_color} {health_score}/100", score_label)
+                    
+                    with col2:
+                        st.metric("Valuation", analysis['valuation_status'])
+                    
+                    with col3:
+                        st.metric("Strengths Found", len(analysis['strengths']))
+                    
+                    # Strengths and Red Flags
+                    st.markdown("---")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("#### ✅ Strengths")
+                        if analysis['strengths']:
+                            for strength in analysis['strengths']:
+                                st.markdown(f"- {strength}")
+                        else:
+                            st.info("No significant strengths identified")
+                    
+                    with col2:
+                        st.markdown("#### 🚩 Red Flags")
+                        if analysis['red_flags']:
+                            for flag in analysis['red_flags']:
+                                st.markdown(f"- ⚠️ {flag}")
+                        else:
+                            st.success("No major red flags identified")
+                    
+                    # Valuation Metrics
+                    st.markdown("---")
+                    st.markdown("#### 💰 Valuation Metrics")
+                    
+                    val = fundamentals['valuation']
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        pe_trailing = val.get('pe_trailing')
+                        if pe_trailing:
+                            interpretation = fund_analyzer.get_metric_interpretation('pe_trailing', pe_trailing)
+                            st.metric("P/E Ratio (Trailing)", f"{pe_trailing:.2f}", 
+                                     help=f"Price-to-Earnings ratio. {interpretation}")
+                        else:
+                            st.metric("P/E Ratio (Trailing)", "N/A", help="Data not available")
+                    
+                    with col2:
+                        pe_forward = val.get('pe_forward')
+                        if pe_forward:
+                            interpretation = fund_analyzer.get_metric_interpretation('pe_forward', pe_forward)
+                            st.metric("P/E Ratio (Forward)", f"{pe_forward:.2f}",
+                                     help=f"Forward P/E ratio. {interpretation}")
+                        else:
+                            st.metric("P/E Ratio (Forward)", "N/A", help="Data not available")
+                    
+                    with col3:
+                        pb_ratio = val.get('pb_ratio')
+                        if pb_ratio:
+                            interpretation = fund_analyzer.get_metric_interpretation('pb_ratio', pb_ratio)
+                            st.metric("P/B Ratio", f"{pb_ratio:.2f}",
+                                     help=f"Price-to-Book ratio. {interpretation}")
+                        else:
+                            st.metric("P/B Ratio", "N/A", help="Data not available")
+                    
+                    with col4:
+                        peg_ratio = val.get('peg_ratio')
+                        if peg_ratio:
+                            interpretation = fund_analyzer.get_metric_interpretation('peg_ratio', peg_ratio)
+                            st.metric("PEG Ratio", f"{peg_ratio:.2f}",
+                                     help=f"Price/Earnings-to-Growth ratio. {interpretation}")
+                        else:
+                            st.metric("PEG Ratio", "N/A", help="Data not available")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        market_cap = val.get('market_cap')
+                        if market_cap:
+                            if market_cap >= 1e12:
+                                cap_str = f"${market_cap/1e12:.2f}T"
+                            elif market_cap >= 1e9:
+                                cap_str = f"${market_cap/1e9:.2f}B"
+                            else:
+                                cap_str = f"${market_cap/1e6:.2f}M"
+                            st.metric("Market Cap", cap_str, help="Total market value of company")
+                        else:
+                            st.metric("Market Cap", "N/A")
+                    
+                    with col2:
+                        ps_ratio = val.get('price_to_sales')
+                        if ps_ratio:
+                            st.metric("P/S Ratio", f"{ps_ratio:.2f}",
+                                     help="Price-to-Sales ratio - lower is generally better")
+                        else:
+                            st.metric("P/S Ratio", "N/A")
+                    
+                    # Profitability Metrics
+                    st.markdown("---")
+                    st.markdown("#### 📊 Profitability Metrics")
+                    
+                    prof = fundamentals['profitability']
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        profit_margin = prof.get('profit_margin')
+                        if profit_margin is not None:
+                            interpretation = fund_analyzer.get_metric_interpretation('profit_margin', profit_margin)
+                            color = "🟢" if profit_margin > 0.1 else ("🟡" if profit_margin > 0 else "🔴")
+                            st.metric(f"{color} Profit Margin", f"{profit_margin*100:.2f}%",
+                                     help=f"{interpretation}")
+                        else:
+                            st.metric("Profit Margin", "N/A")
+                    
+                    with col2:
+                        operating_margin = prof.get('operating_margin')
+                        if operating_margin is not None:
+                            color = "🟢" if operating_margin > 0.15 else ("🟡" if operating_margin > 0 else "🔴")
+                            st.metric(f"{color} Operating Margin", f"{operating_margin*100:.2f}%",
+                                     help="Operating income as % of revenue")
+                        else:
+                            st.metric("Operating Margin", "N/A")
+                    
+                    with col3:
+                        roe = prof.get('roe')
+                        if roe is not None:
+                            interpretation = fund_analyzer.get_metric_interpretation('roe', roe)
+                            color = "🟢" if roe > 0.15 else ("🟡" if roe > 0 else "🔴")
+                            st.metric(f"{color} ROE", f"{roe*100:.2f}%",
+                                     help=f"Return on Equity. {interpretation}")
+                        else:
+                            st.metric("ROE", "N/A")
+                    
+                    with col4:
+                        roa = prof.get('roa')
+                        if roa is not None:
+                            color = "🟢" if roa > 0.05 else ("🟡" if roa > 0 else "🔴")
+                            st.metric(f"{color} ROA", f"{roa*100:.2f}%",
+                                     help="Return on Assets - how efficiently company uses assets")
+                        else:
+                            st.metric("ROA", "N/A")
+                    
+                    # Growth Metrics
+                    st.markdown("---")
+                    st.markdown("#### 🚀 Growth Metrics")
+                    
+                    growth = fundamentals['growth']
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        revenue_growth = growth.get('revenue_growth')
+                        if revenue_growth is not None:
+                            color = "🟢" if revenue_growth > 0.15 else ("🟡" if revenue_growth > 0 else "🔴")
+                            st.metric(f"{color} Revenue Growth", f"{revenue_growth*100:.2f}%",
+                                     help="Year-over-year revenue growth")
+                        else:
+                            st.metric("Revenue Growth", "N/A")
+                    
+                    with col2:
+                        earnings_growth = growth.get('earnings_growth')
+                        if earnings_growth is not None:
+                            color = "🟢" if earnings_growth > 0.15 else ("🟡" if earnings_growth > 0 else "🔴")
+                            st.metric(f"{color} Earnings Growth", f"{earnings_growth*100:.2f}%",
+                                     help="Year-over-year earnings growth")
+                        else:
+                            st.metric("Earnings Growth", "N/A")
+                    
+                    with col3:
+                        eps = growth.get('eps')
+                        if eps is not None:
+                            color = "🟢" if eps > 0 else "🔴"
+                            st.metric(f"{color} EPS (Trailing)", f"${eps:.2f}",
+                                     help="Earnings Per Share - profit per share")
+                        else:
+                            st.metric("EPS (Trailing)", "N/A")
+                    
+                    with col4:
+                        eps_forward = growth.get('eps_forward')
+                        if eps_forward is not None:
+                            st.metric("EPS (Forward)", f"${eps_forward:.2f}",
+                                     help="Expected future earnings per share")
+                        else:
+                            st.metric("EPS (Forward)", "N/A")
+                    
+                    # Financial Health Metrics
+                    st.markdown("---")
+                    st.markdown("#### 💪 Financial Health")
+                    
+                    health = fundamentals['financial_health']
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        debt_to_equity = health.get('debt_to_equity')
+                        if debt_to_equity is not None:
+                            interpretation = fund_analyzer.get_metric_interpretation('debt_to_equity', debt_to_equity)
+                            color = "🟢" if debt_to_equity < 50 else ("🟡" if debt_to_equity < 100 else "🔴")
+                            st.metric(f"{color} Debt-to-Equity", f"{debt_to_equity:.1f}",
+                                     help=f"{interpretation}")
+                        else:
+                            st.metric("Debt-to-Equity", "N/A")
+                    
+                    with col2:
+                        current_ratio = health.get('current_ratio')
+                        if current_ratio is not None:
+                            interpretation = fund_analyzer.get_metric_interpretation('current_ratio', current_ratio)
+                            color = "🟢" if current_ratio > 1.5 else ("🟡" if current_ratio > 1 else "🔴")
+                            st.metric(f"{color} Current Ratio", f"{current_ratio:.2f}",
+                                     help=f"{interpretation}")
+                        else:
+                            st.metric("Current Ratio", "N/A")
+                    
+                    with col3:
+                        quick_ratio = health.get('quick_ratio')
+                        if quick_ratio is not None:
+                            color = "🟢" if quick_ratio > 1 else "🔴"
+                            st.metric(f"{color} Quick Ratio", f"{quick_ratio:.2f}",
+                                     help="Like current ratio but excludes inventory - tests immediate liquidity")
+                        else:
+                            st.metric("Quick Ratio", "N/A")
+                    
+                    with col4:
+                        free_cash_flow = health.get('free_cash_flow')
+                        if free_cash_flow is not None:
+                            if free_cash_flow >= 1e9:
+                                fcf_str = f"${free_cash_flow/1e9:.2f}B"
+                            elif free_cash_flow >= 1e6:
+                                fcf_str = f"${free_cash_flow/1e6:.2f}M"
+                            else:
+                                fcf_str = f"${free_cash_flow:,.0f}"
+                            color = "🟢" if free_cash_flow > 0 else "🔴"
+                            st.metric(f"{color} Free Cash Flow", fcf_str,
+                                     help="Cash available after capital expenditures - crucial for growth")
+                        else:
+                            st.metric("Free Cash Flow", "N/A")
+                    
+                    # Dividend Metrics
+                    st.markdown("---")
+                    st.markdown("#### 💵 Dividend Information")
+                    
+                    div = fundamentals['dividends']
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        dividend_yield = div.get('dividend_yield')
+                        if dividend_yield and dividend_yield > 0:
+                            interpretation = fund_analyzer.get_metric_interpretation('dividend_yield', dividend_yield)
+                            st.metric("Dividend Yield", f"{dividend_yield*100:.2f}%",
+                                     help=f"{interpretation}")
+                        else:
+                            st.metric("Dividend Yield", "None", help="Company does not pay dividends")
+                    
+                    with col2:
+                        payout_ratio = div.get('payout_ratio')
+                        if payout_ratio is not None:
+                            color = "🟢" if 0 < payout_ratio < 0.6 else ("🟡" if payout_ratio < 0.8 else "🔴")
+                            st.metric(f"{color} Payout Ratio", f"{payout_ratio*100:.1f}%",
+                                     help="% of earnings paid as dividends - lower is more sustainable")
+                        else:
+                            st.metric("Payout Ratio", "N/A")
+                    
+                    with col3:
+                        ex_dividend_date = div.get('ex_dividend_date')
+                        if ex_dividend_date:
+                            st.metric("Ex-Dividend Date", ex_dividend_date,
+                                     help="Last date to buy stock and receive next dividend")
+                        else:
+                            st.metric("Ex-Dividend Date", "N/A")
+                    
+                    with col4:
+                        dividend_rate = div.get('dividend_rate')
+                        if dividend_rate:
+                            st.metric("Annual Dividend", f"${dividend_rate:.2f}",
+                                     help="Total annual dividend per share")
+                        else:
+                            st.metric("Annual Dividend", "N/A")
+                    
+                    # Other Important Metrics
+                    st.markdown("---")
+                    st.markdown("#### 📅 Other Important Metrics")
+                    
+                    other = fundamentals['other']
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        beta = other.get('beta')
+                        if beta is not None:
+                            interpretation = fund_analyzer.get_metric_interpretation('beta', beta)
+                            st.metric("Beta (Volatility)", f"{beta:.2f}",
+                                     help=f"{interpretation}")
+                        else:
+                            st.metric("Beta", "N/A")
+                    
+                    with col2:
+                        earnings_date = other.get('earnings_date')
+                        if earnings_date:
+                            st.metric("Next Earnings", earnings_date,
+                                     help="Next earnings report date - expect volatility")
+                        else:
+                            st.metric("Next Earnings", "N/A")
+                    
+                    with col3:
+                        high_52 = other.get('fifty_two_week_high')
+                        low_52 = other.get('fifty_two_week_low')
+                        if high_52 and low_52:
+                            st.metric("52-Week Range", f"${low_52:.2f} - ${high_52:.2f}",
+                                     help="Stock's trading range over past year")
+                        else:
+                            st.metric("52-Week Range", "N/A")
+                    
+                    # Investment Insights
+                    st.markdown("---")
+                    st.markdown("#### 💡 Long-Term Investment Insights")
+                    
+                    if health_score >= 70:
+                        st.success(f"""
+                        **Strong Fundamental Profile (Score: {health_score}/100)**
+                        
+                        This company shows solid fundamentals for long-term investment consideration:
+                        
+                        **Key Positives:**
+                        {chr(10).join('- ' + s for s in analysis['strengths'][:5]) if analysis['strengths'] else '- Multiple positive indicators'}
+                        
+                        **Valuation Status:** {analysis['valuation_status']}
+                        
+                        **Investment Strategy:**
+                        - Suitable for buy-and-hold approach
+                        - Consider dollar-cost averaging for entry
+                        - Monitor quarterly earnings for changes
+                        - Review fundamentals annually
+                        """)
+                    elif health_score >= 50:
+                        st.info(f"""
+                        **Moderate Fundamental Profile (Score: {health_score}/100)**
+                        
+                        This company shows mixed fundamentals. Suitable for investors with moderate risk tolerance.
+                        
+                        **Valuation Status:** {analysis['valuation_status']}
+                        
+                        **Areas of Concern:**
+                        {chr(10).join('- ' + f for f in analysis['red_flags'][:3]) if analysis['red_flags'] else '- Some metrics need improvement'}
+                        
+                        **Investment Strategy:**
+                        - Conduct deeper due diligence
+                        - Compare with industry peers
+                        - Watch for improving trends
+                        - Consider smaller position size
+                        """)
+                    else:
+                        st.warning(f"""
+                        **Weak Fundamental Profile (Score: {health_score}/100)**
+                        
+                        This company shows concerning fundamentals. High-risk investment.
+                        
+                        **Major Red Flags:**
+                        {chr(10).join('- ' + f for f in analysis['red_flags'][:5]) if analysis['red_flags'] else '- Multiple negative indicators'}
+                        
+                        **Valuation Status:** {analysis['valuation_status']}
+                        
+                        **Investment Strategy:**
+                        - High risk - not suitable for conservative investors
+                        - If considering, use very small position
+                        - Focus on potential turnaround catalysts
+                        - Set strict stop-losses
+                        """)
+                    
+                    # Educational Content
+                    st.markdown("---")
+                    st.markdown("#### 📚 Understanding Fundamental Analysis")
+                    
+                    with st.expander("What is Fundamental Analysis?"):
+                        st.markdown("""
+                        Fundamental analysis evaluates a company's intrinsic value by examining:
+                        
+                        1. **Financial Health** - Balance sheet strength, debt levels, liquidity
+                        2. **Profitability** - How efficiently the company generates profits
+                        3. **Growth Potential** - Revenue and earnings growth trajectory
+                        4. **Valuation** - Whether the stock price is justified by fundamentals
+                        5. **Market Position** - Competitive advantages and industry standing
+                        
+                        **For long-term investors**, fundamentals matter more than short-term price movements.
+                        """)
+                    
+                    with st.expander("How to Use These Metrics"):
+                        st.markdown("""
+                        **Valuation Metrics** - Are you paying a fair price?
+                        - P/E Ratio: Lower is generally cheaper (compare to industry average)
+                        - PEG Ratio: Below 1 suggests undervalued growth
+                        - P/B Ratio: Below 3 is typically reasonable
+                        
+                        **Profitability Metrics** - Is the business profitable?
+                        - Profit Margin > 10%: Good
+                        - ROE > 15%: Excellent returns to shareholders
+                        - Operating Margin: Shows operational efficiency
+                        
+                        **Growth Metrics** - Is the company growing?
+                        - Revenue Growth > 10%: Strong growth
+                        - Positive EPS: Essential for profitability
+                        - Compare to industry growth rates
+                        
+                        **Financial Health** - Can the company weather storms?
+                        - Debt-to-Equity < 100: Healthy leverage
+                        - Current Ratio > 1.5: Good liquidity
+                        - Positive Free Cash Flow: Critical for sustainability
+                        
+                        **Combined Analysis**: Use fundamentals + technical analysis for best results!
+                        """)
+                    
+                    with st.expander("Value vs Growth Investing"):
+                        st.markdown("""
+                        **Value Investing** (Warren Buffett style):
+                        - Focus on low P/E, P/B ratios
+                        - Strong free cash flow
+                        - Dividend payments
+                        - Proven track record
+                        - Example metrics: P/E < 15, PEG < 1, Dividend Yield > 3%
+                        
+                        **Growth Investing** (Focus on expansion):
+                        - High revenue/earnings growth
+                        - Reinvestment over dividends
+                        - Market leadership
+                        - Innovation potential
+                        - Example metrics: Revenue Growth > 20%, expanding margins
+                        
+                        **Your approach depends on your goals, timeline, and risk tolerance.**
+                        """)
+                    
+                    # Disclaimer
+                    st.markdown("---")
+                    st.caption("""
+                    **Fundamental Analysis Disclaimer:**
+                    All data is sourced from yfinance and may have delays or inaccuracies. 
+                    The Health Score is an educational tool and not investment advice. 
+                    Always conduct your own thorough research and consult with a financial advisor.
+                    Past performance does not guarantee future results.
+                    """)
             
             # Detailed analysis
             display_detailed_analysis(indicators, score_results, stock_info)
