@@ -986,152 +986,13 @@ def main():
             st.markdown("---")
             st.markdown("## 📊 INTERACTIVE CHARTS")
             
-            tab1, tab2, tab3, tab4 = st.tabs(["Price & Indicators", "Monte Carlo Simulation", "📰 News & Sentiment", "📈 Fundamentals"])
+            tab1, tab2, tab3, tab4 = st.tabs(["Price & Indicators", "📈 Fundamentals", "📰 News & Sentiment", "Monte Carlo Simulation"])
             
             with tab1:
                 price_chart = create_price_chart(data, indicators, stock_info['name'])
                 st.plotly_chart(price_chart, use_container_width=True)
             
             with tab2:
-                st.markdown("### 🎲 Monte Carlo Simulation Results")
-                
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.metric("Median Price", f"${simulation_results['median_price']:.2f}")
-                with col2:
-                    st.metric("Mean Price", f"${simulation_results['mean_price']:.2f}")
-                with col3:
-                    st.metric("10th Percentile", f"${simulation_results['percentile_10']:.2f}")
-                with col4:
-                    st.metric("90th Percentile", f"${simulation_results['percentile_90']:.2f}")
-                
-                mc_chart = create_monte_carlo_chart(simulation_results)
-                st.plotly_chart(mc_chart, use_container_width=True)
-                
-                st.info(f"""
-                **Simulation Parameters:**
-                - Iterations: 1,000
-                - Timeframe: {days} days
-                - Daily Drift: {simulation_results['drift']*100:.3f}%
-                - Daily Volatility: {simulation_results['volatility']*100:.2f}%
-                """)
-            
-            with tab3:
-                st.markdown("### 📰 News & Sentiment Analysis")
-                
-                with st.spinner("Fetching latest news..."):
-                    # Fetch and analyze news
-                    news_analyzer = NewsSentimentAnalyzer(ticker)
-                    news_data = news_analyzer.get_news_with_sentiment(limit=10)
-                    
-                    if 'error' in news_data:
-                        st.warning(f"⚠️ {news_data['error']}")
-                    else:
-                        # Display overall sentiment
-                        st.markdown("#### 📊 Overall Sentiment")
-                        overall = news_data['overall_sentiment']
-                        
-                        col1, col2, col3, col4 = st.columns(4)
-                        with col1:
-                            st.metric(
-                                "Sentiment",
-                                f"{overall['emoji']} {overall['sentiment']}",
-                                f"Score: {overall['compound']:.3f}"
-                            )
-                        with col2:
-                            st.metric("🟢 Positive", f"{overall['positive_count']}", 
-                                     f"{overall['positive_count']/overall['total_count']*100:.0f}%")
-                        with col3:
-                            st.metric("🟡 Neutral", f"{overall['neutral_count']}", 
-                                     f"{overall['neutral_count']/overall['total_count']*100:.0f}%")
-                        with col4:
-                            st.metric("🔴 Negative", f"{overall['negative_count']}", 
-                                     f"{overall['negative_count']/overall['total_count']*100:.0f}%")
-                        
-                        # Sentiment interpretation
-                        st.markdown("---")
-                        if overall['sentiment'] == 'Positive':
-                            st.success(f"""
-                            **📈 Positive News Sentiment Detected**
-                            
-                            Recent news coverage is predominantly positive ({overall['positive_count']}/{overall['total_count']} articles).
-                            This suggests favorable market perception and could support upward price momentum.
-                            
-                            **What this means:**
-                            - Positive sentiment often correlates with buying interest
-                            - Can act as a tailwind for technical setups
-                            - Monitor for continuation or reversal in sentiment
-                            """)
-                        elif overall['sentiment'] == 'Negative':
-                            st.error(f"""
-                            **📉 Negative News Sentiment Detected**
-                            
-                            Recent news coverage is predominantly negative ({overall['negative_count']}/{overall['total_count']} articles).
-                            This suggests unfavorable market perception and could pressure prices downward.
-                            
-                            **What this means:**
-                            - Negative sentiment often precedes or confirms downtrends
-                            - Acts as headwind against bullish technical signals
-                            - Consider waiting for sentiment improvement before entry
-                            """)
-                        else:
-                            st.info(f"""
-                            **⚖️ Neutral News Sentiment**
-                            
-                            Recent news coverage is mixed or neutral. No clear sentiment bias detected.
-                            
-                            **What this means:**
-                            - Sentiment is not a strong factor currently
-                            - Rely more heavily on technical indicators
-                            - Watch for sentiment shifts in either direction
-                            """)
-                        
-                        # Display individual articles
-                        st.markdown("---")
-                        st.markdown("#### 📰 Recent Articles")
-                        
-                        for i, article in enumerate(news_data['articles'], 1):
-                            sentiment = article['sentiment']
-                            
-                            with st.expander(f"{sentiment['emoji']} {article['title']}", expanded=(i <= 3)):
-                                col1, col2 = st.columns([3, 1])
-                                
-                                with col1:
-                                    st.markdown(f"**Publisher:** {article['publisher']}")
-                                    st.markdown(f"**Published:** {article['published_str']}")
-                                    
-                                    if article['link']:
-                                        st.markdown(f"[Read full article →]({article['link']})")
-                                
-                                with col2:
-                                    st.metric("Sentiment", sentiment['sentiment'])
-                                    st.metric("Score", f"{sentiment['compound']:.3f}")
-                                
-                                # Sentiment breakdown
-                                st.markdown("**Sentiment Breakdown:**")
-                                col1, col2, col3 = st.columns(3)
-                                with col1:
-                                    st.write(f"🟢 Positive: {sentiment['positive']*100:.1f}%")
-                                with col2:
-                                    st.write(f"🟡 Neutral: {sentiment['neutral']*100:.1f}%")
-                                with col3:
-                                    st.write(f"🔴 Negative: {sentiment['negative']*100:.1f}%")
-                        
-                        # Disclaimer
-                        st.markdown("---")
-                        st.caption("""
-                        **About Sentiment Analysis:**
-                        Sentiment scores are generated using VADER (Valence Aware Dictionary and sEntiment Reasoner),
-                        which analyzes the emotional tone of text. Scores range from -1 (most negative) to +1 (most positive).
-                        
-                        - **Positive:** Score ≥ 0.05
-                        - **Neutral:** -0.05 < Score < 0.05
-                        - **Negative:** Score ≤ -0.05
-                        
-                        Sentiment analysis provides context but should be combined with technical analysis for trading decisions.
-                        """)
-            
-            with tab4:
                 st.markdown("### 📈 Fundamental Analysis")
                 st.markdown("**Long-term investment evaluation based on company fundamentals**")
                 
@@ -1622,3 +1483,142 @@ def main():
 
 if __name__ == "__main__":
     main()
+                st.markdown("### 📰 News & Sentiment Analysis")
+                
+                with st.spinner("Fetching latest news..."):
+                    # Fetch and analyze news
+                    news_analyzer = NewsSentimentAnalyzer(ticker)
+                    news_data = news_analyzer.get_news_with_sentiment(limit=10)
+                    
+                    if 'error' in news_data:
+                        st.warning(f"⚠️ {news_data['error']}")
+                    else:
+                        # Display overall sentiment
+                        st.markdown("#### 📊 Overall Sentiment")
+                        overall = news_data['overall_sentiment']
+                        
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.metric(
+                                "Sentiment",
+                                f"{overall['emoji']} {overall['sentiment']}",
+                                f"Score: {overall['compound']:.3f}"
+                            )
+                        with col2:
+                            st.metric("🟢 Positive", f"{overall['positive_count']}", 
+                                     f"{overall['positive_count']/overall['total_count']*100:.0f}%")
+                        with col3:
+                            st.metric("🟡 Neutral", f"{overall['neutral_count']}", 
+                                     f"{overall['neutral_count']/overall['total_count']*100:.0f}%")
+                        with col4:
+                            st.metric("🔴 Negative", f"{overall['negative_count']}", 
+                                     f"{overall['negative_count']/overall['total_count']*100:.0f}%")
+                        
+                        # Sentiment interpretation
+                        st.markdown("---")
+                        if overall['sentiment'] == 'Positive':
+                            st.success(f"""
+                            **📈 Positive News Sentiment Detected**
+                            
+                            Recent news coverage is predominantly positive ({overall['positive_count']}/{overall['total_count']} articles).
+                            This suggests favorable market perception and could support upward price momentum.
+                            
+                            **What this means:**
+                            - Positive sentiment often correlates with buying interest
+                            - Can act as a tailwind for technical setups
+                            - Monitor for continuation or reversal in sentiment
+                            """)
+                        elif overall['sentiment'] == 'Negative':
+                            st.error(f"""
+                            **📉 Negative News Sentiment Detected**
+                            
+                            Recent news coverage is predominantly negative ({overall['negative_count']}/{overall['total_count']} articles).
+                            This suggests unfavorable market perception and could pressure prices downward.
+                            
+                            **What this means:**
+                            - Negative sentiment often precedes or confirms downtrends
+                            - Acts as headwind against bullish technical signals
+                            - Consider waiting for sentiment improvement before entry
+                            """)
+                        else:
+                            st.info(f"""
+                            **⚖️ Neutral News Sentiment**
+                            
+                            Recent news coverage is mixed or neutral. No clear sentiment bias detected.
+                            
+                            **What this means:**
+                            - Sentiment is not a strong factor currently
+                            - Rely more heavily on technical indicators
+                            - Watch for sentiment shifts in either direction
+                            """)
+                        
+                        # Display individual articles
+                        st.markdown("---")
+                        st.markdown("#### 📰 Recent Articles")
+                        
+                        for i, article in enumerate(news_data['articles'], 1):
+                            sentiment = article['sentiment']
+                            
+                            with st.expander(f"{sentiment['emoji']} {article['title']}", expanded=(i <= 3)):
+                                col1, col2 = st.columns([3, 1])
+                                
+                                with col1:
+                                    st.markdown(f"**Publisher:** {article['publisher']}")
+                                    st.markdown(f"**Published:** {article['published_str']}")
+                                    
+                                    if article['link']:
+                                        st.markdown(f"[Read full article →]({article['link']})")
+                                
+                                with col2:
+                                    st.metric("Sentiment", sentiment['sentiment'])
+                                    st.metric("Score", f"{sentiment['compound']:.3f}")
+                                
+                                # Sentiment breakdown
+                                st.markdown("**Sentiment Breakdown:**")
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.write(f"🟢 Positive: {sentiment['positive']*100:.1f}%")
+                                with col2:
+                                    st.write(f"🟡 Neutral: {sentiment['neutral']*100:.1f}%")
+                                with col3:
+                                    st.write(f"🔴 Negative: {sentiment['negative']*100:.1f}%")
+                        
+                        # Disclaimer
+                        st.markdown("---")
+                        st.caption("""
+                        **About Sentiment Analysis:**
+                        Sentiment scores are generated using VADER (Valence Aware Dictionary and sEntiment Reasoner),
+                        which analyzes the emotional tone of text. Scores range from -1 (most negative) to +1 (most positive).
+                        
+                        - **Positive:** Score ≥ 0.05
+                        - **Neutral:** -0.05 < Score < 0.05
+                        - **Negative:** Score ≤ -0.05
+                        
+                        Sentiment analysis provides context but should be combined with technical analysis for trading decisions.
+                        """)
+            
+            with tab4:
+                st.markdown("### 🎲 Monte Carlo Simulation Results")
+                
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Median Price", f"${simulation_results['median_price']:.2f}")
+                with col2:
+                    st.metric("Mean Price", f"${simulation_results['mean_price']:.2f}")
+                with col3:
+                    st.metric("10th Percentile", f"${simulation_results['percentile_10']:.2f}")
+                with col4:
+                    st.metric("90th Percentile", f"${simulation_results['percentile_90']:.2f}")
+                
+                mc_chart = create_monte_carlo_chart(simulation_results)
+                st.plotly_chart(mc_chart, use_container_width=True)
+                
+                st.info(f"""
+                **Simulation Parameters:**
+                - Iterations: 1,000
+                - Timeframe: {days} days
+                - Daily Drift: {simulation_results['drift']*100:.3f}%
+                - Daily Volatility: {simulation_results['volatility']*100:.2f}%
+                """)
+            
+            with tab3:
